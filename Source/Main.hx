@@ -28,24 +28,24 @@ enum Player {
 
 class Main extends Sprite
 {
-	var inited:Bool;
+	var inited :Bool;
 	
-	private var platform1:Platform;
-	private var platform2:Platform;
-	private var ball:Ball;
-	private var scorePlayer:Int;
-	private var scoreAI:Int;
-	private var scoreField:TextField;
-	private var messageField:TextField;
-	private var currentGameState:GameState;
-	private var arrowKeyUp:Bool;
-	private var arrowKeyDown:Bool;
-	private var platformSpeed:Int;
-	private var messageVisibility:Int;
-	private var ballMovement:Point;
-	private var ballSpeed:Int;
-	private var soundChannel:SoundChannel;
-	private var soundFile:Sound;
+	private var platform1 :Platform;
+	private var platform2 :Platform;
+	private var ball :Ball;
+	private var scorePlayer :Int;
+	private var scoreAI :Int;
+	private var scoreField :TextField;
+	private var messageField :TextField;
+	private var currentGameState :GameState;
+	private var arrowKeyUp :Bool;
+	private var arrowKeyDown :Bool;
+	private var platformSpeed :Int;
+	private var messageVisibility :Int;
+	private var ballMovement :Point;
+	private var ballSpeed :Int;
+	private var soundChannel :SoundChannel;
+	private var soundFile :Sound;
 
 	/* ENTRY POINT */
 
@@ -53,50 +53,70 @@ class Main extends Sprite
 	{
 		if (!inited) init();
 		 else {
-			trace("resize");
-			// (resize or orientation change)
+			// rescale all sprite objects to match the new screen size.
+			rescale(ScaleManager.getScaleX(), ScaleManager.getScaleY());
+			ScaleManager.resetScreenInitials();
 		}
+	}
+
+	private function rescale(scaleX :Float, scaleY :Float){
+		trace("scaling", scaleX, scaleY);
+		rescaleSprite(platform1, scaleX, scaleY);
+		rescaleSprite(platform2, scaleX, scaleY);
+		rescaleSprite(ball, scaleX, scaleY);
+	}
+
+	private function rescaleSprite(sprite :Sprite, scaleX :Float, scaleY :Float){
+//		sprite.scaleX = scaleX;
+//		sprite.scaleY = scaleY;
+		trace("before", sprite.x+"", sprite.y+"");
+		sprite.x = sprite.x * scaleX;
+		sprite.y = sprite.y * scaleY;
+		trace("after", sprite.x+"", sprite.y+"");
+	}
+
+	private function rescaleTextField() :Void{
+
 	}
 
 	function init()
 	{
-		trace("init");
 		if (inited) return;
 		inited = true;
 
-		var bd:BitmapData = Assets.getBitmapData("backgroundImg");
-		var b:Bitmap = new Bitmap(bd);
-		this.addChild(b);
+//		var bd :BitmapData = Assets.getBitmapData("backgroundImg");
+//		var b :Bitmap = new Bitmap(bd);
+//		this.addChild(b);
+//
+//		soundFile = Assets.getSound("backgroundSound");
+//		soundChannel = soundFile.play(0 ,100);
 
-		soundFile = Assets.getSound("backgroundSound");
-		soundChannel = soundFile.play(0 ,100);
-
-		platform1 = new Platform(Utils.PLATFORM1_X, Utils.PLATFORM_Y, Utils.PLATFORM_WIDTH, Utils.PLATFORM_HEIGHT);
+		platform1 = new Platform(ScaleManager.PLATFORM1_X, ScaleManager.PLATFORM_Y, ScaleManager.PLATFORM_WIDTH, ScaleManager.PLATFORM_HEIGHT);
 		this.addChild(platform1);
 
-		platform2 = new Platform(Utils.PLATFORM2_X, Utils.PLATFORM_Y, Utils.PLATFORM_WIDTH, Utils.PLATFORM_HEIGHT);
+		platform2 = new Platform(ScaleManager.PLATFORM2_X, ScaleManager.PLATFORM_Y, ScaleManager.PLATFORM_WIDTH, ScaleManager.PLATFORM_HEIGHT);
 		this.addChild(platform2);
 
-		ball = new Ball(Utils.screenWidth()/2, Utils.screenHeight()/2);
+		ball = new Ball(ScaleManager.screenWidth()/2, ScaleManager.screenHeight()/2);
 		this.addChild(ball);
 
-		var scoreFormat:TextFormat = new TextFormat("Verdana", 24, Utils.SCORE_COLOR, true);
+		var scoreFormat :TextFormat = new TextFormat("Verdana", 24, ScaleManager.SCORE_COLOR, true);
 		scoreFormat.align = TextFormatAlign.CENTER;
 
 		scoreField = new TextField();
 		addChild(scoreField);
-		scoreField.width = Utils.screenWidth();
-		scoreField.y = Utils.MESSAGE_MARGIN;
+		scoreField.width = ScaleManager.screenWidth();
+		scoreField.y = ScaleManager.MESSAGE_MARGIN;
 		scoreField.defaultTextFormat = scoreFormat;
 		scoreField.selectable = false;
 
-		var messageFormat:TextFormat = new TextFormat("Verdana", 18, Utils.SCORE_COLOR, true);
+		var messageFormat :TextFormat = new TextFormat("Verdana", 18, ScaleManager.SCORE_COLOR, true);
 		messageFormat.align = TextFormatAlign.CENTER;
 
 		messageField = new TextField();
 		addChild(messageField);
-		messageField.width = Utils.screenWidth();
-		messageField.y = Utils.screenWidth() - Utils.MESSAGE_MARGIN;
+		messageField.width = ScaleManager.screenWidth();
+		messageField.y = ScaleManager.screenWidth() - ScaleManager.MESSAGE_MARGIN;
 		messageField.defaultTextFormat = messageFormat;
 		messageField.selectable = false;
 		messageField.text = "Press SPACE to start\nUse ARROW KEYS to move your platform";
@@ -105,23 +125,22 @@ class Main extends Sprite
 		setGameState(GameState.Paused);
 
 		stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDown);
-//		stage.addEventListener(KeyboardEvent.);
 		stage.addEventListener(KeyboardEvent.KEY_UP, keyUp);
 		this.addEventListener(Event.ENTER_FRAME, everyFrame);
 	}
 
-	private function initFieldVariables():Void{
+	private function initFieldVariables() :Void{
 		scorePlayer = 0;
 		scoreAI = 0;
 //		messageVisibility = 0;
 		arrowKeyUp = false;
 		arrowKeyDown = false;
-		platformSpeed = Utils.PLATFORM_SPEED;
-		ballSpeed = Utils.BALL_SPEED;
+		platformSpeed = ScaleManager.PLATFORM_SPEED;
+		ballSpeed = ScaleManager.BALL_SPEED;
 		ballMovement = new Point(0,0);
 	}
 
-	private function setGameState(state:GameState):Void {
+	private function setGameState(state :GameState) :Void {
 		currentGameState = state;
 		updateScore();
 		if (state == GameState.Paused) {
@@ -130,42 +149,42 @@ class Main extends Sprite
 
 			messageField.alpha = 1;
 		}else {
-			soundChannel = soundFile.play(0 ,100);
+//			soundChannel = soundFile.play(0 ,100);
 			messageField.alpha = 0;
-			platform1.y = Utils.PLATFORM_Y;
-			platform2.y = Utils.PLATFORM_Y;
-			ball.x = Utils.screenWidth() / 2;
-			ball.y = Utils.screenHeight() / 2;
+			platform1.y = ScaleManager.PLATFORM_Y;
+			platform2.y = ScaleManager.PLATFORM_Y;
+			ball.x = ScaleManager.screenWidth() / 2;
+			ball.y = ScaleManager.screenHeight() / 2;
 			setBallMovementVector();
 		}
 	}
 
-	private function setBallMovementVector():Void{
-		var direction:Int = (Math.random() > .5)?(1):( -1);
-		var randomAngle:Float = (Math.random() * Math.PI / 2) - 45;
+	private function setBallMovementVector() :Void{
+		var direction :Int = (Math.random() > .5)?(1) :( -1);
+		var randomAngle :Float = (Math.random() * Math.PI / 2) - 45;
 		ballMovement.x = direction * Math.cos(randomAngle) * ballSpeed;
 		ballMovement.y = Math.sin(randomAngle) * ballSpeed;
 	}
 
-	private function keyDown(event:KeyboardEvent):Void {
-		if (currentGameState == GameState.Paused && event.keyCode == Utils.CODE_SPACE) { // Space
+	private function keyDown(event :KeyboardEvent) :Void {
+		if (currentGameState == GameState.Paused && event.keyCode == ScaleManager.CODE_SPACE) { // Space
 			setGameState(GameState.Playing);
-		}else if (event.keyCode == Utils.CODE_UP) { // Up
+		}else if (event.keyCode == ScaleManager.CODE_UP) { // Up
 			arrowKeyUp = true;
-		}else if (event.keyCode == Utils.CODE_DOWN) { // Down
+		}else if (event.keyCode == ScaleManager.CODE_DOWN) { // Down
 			arrowKeyDown = true;
 		}
 	}
 
-	private function keyUp(event:KeyboardEvent):Void {
-		if (event.keyCode == Utils.CODE_UP) { // Up
+	private function keyUp(event :KeyboardEvent) :Void {
+		if (event.keyCode == ScaleManager.CODE_UP) { // Up
 			arrowKeyUp = false;
-		}else if (event.keyCode == Utils.CODE_DOWN) { // Down
+		}else if (event.keyCode == ScaleManager.CODE_DOWN) { // Down
 			arrowKeyDown = false;
 		}
 	}
 
-	private function everyFrame(event:Event):Void {
+	private function everyFrame(event :Event) :Void {
 //		messageVisibility++;
 		if(currentGameState == GameState.Playing){
 			if (arrowKeyUp) {
@@ -175,10 +194,10 @@ class Main extends Sprite
 				platform1.y += platformSpeed;
 			}
 			// AI platform movement
-			if (ball.x > Utils.getAITriggerDistance() && ball.y > platform2.y + 70) {
+			if (ball.x > ScaleManager.getAITriggerDistance() && ball.y > platform2.y + 70) {
 				platform2.y += platformSpeed;
 			}
-			if (ball.x > Utils.getAITriggerDistance() && ball.y < platform2.y + 30) {
+			if (ball.x > ScaleManager.getAITriggerDistance() && ball.y < platform2.y + 30) {
 				platform2.y -= platformSpeed;
 			}
 			// player platform limits
@@ -214,14 +233,14 @@ class Main extends Sprite
 		}*/
 	}
 
-	private function bounceBall():Void {
-		var direction:Int = (ballMovement.x > 0)?( -1):(1);
-		var randomAngle:Float = (Math.random() * Math.PI / 2) - 45;
+	private function bounceBall() :Void {
+		var direction :Int = (ballMovement.x > 0)?( -1) :(1);
+		var randomAngle :Float = (Math.random() * Math.PI / 2) - 45;
 		ballMovement.x = direction * Math.cos(randomAngle) * ballSpeed;
 		ballMovement.y = direction * Math.sin(randomAngle) * ballSpeed;
 	}
 
-	private function winGame(player:Player):Void {
+	private function winGame(player :Player) :Void {
 		if (player == Player.Human) {
 			scorePlayer++;
 		} else {
@@ -230,9 +249,8 @@ class Main extends Sprite
 		setGameState(GameState.Paused);
 	}
 
-	private function updateScore():Void {
+	private function updateScore() :Void {
 		scoreField.text = scorePlayer + " : " + scoreAI;
-		scoreField.textColor = Utils.SCORE_COLOR;
 	}
 
 	/* SETUP */

@@ -1,0 +1,15 @@
+<component name="libraryTable">
+  <library name="1,2,3" type="Haxe">
+    <CLASSES>
+      <root url="file:///usr/lib/haxe/lib/box2d/1,2,3" />
+      <root url="file:///usr/lib/haxe/lib/haxeui/1,8,20" />
+      <root url="file:///usr/lib/haxe/lib/roxlib/1,1,3" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file:///usr/lib/haxe/lib/box2d/1,2,3" />
+      <root url="file:///usr/lib/haxe/lib/haxeui/1,8,20" />
+      <root url="file:///usr/lib/haxe/lib/roxlib/1,1,3" />
+    </SOURCES>
+  </library>
+</component>

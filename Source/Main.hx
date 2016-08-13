@@ -1,5 +1,11 @@
 package ;
 
+import flash.ui.Mouse;
+import flash.events.MouseEvent;
+import com.roxstudio.haxe.gesture.RoxGestureEvent;
+import com.roxstudio.haxe.gesture.RoxGestureAgent;
+import openfl.ui.MultitouchInputMode;
+import openfl.ui.Multitouch;
 import Enums.GameState;
 import Enums.Player;
 import flash.media.SoundChannel;
@@ -19,7 +25,12 @@ import openfl.text.TextFormatAlign;
 class Main extends Sprite
 {
 	var inited :Bool;
-	
+
+	// key codes
+	public static inline var CODE_SPACE :Int = 32;
+	public static inline var CODE_UP :Int = 38;
+	public static inline var CODE_DOWN :Int = 40;
+
 	private var platform1 :Platform;
 	private var platform2 :Platform;
 	private var ball :Ball;
@@ -36,6 +47,8 @@ class Main extends Sprite
 	private var ballSpeed :Float;
 	private var soundChannel :SoundChannel;
 	private var soundFile :Sound;
+	private var lastYScroll :Float;
+	private var scrollTriggered :Bool;
 
 	/* ENTRY POINT */
 
@@ -74,16 +87,16 @@ class Main extends Sprite
 
 	function init()
 	{
-		trace("init");
 		if (inited) return;
 		inited = true;
 
-//		var bd :BitmapData = Assets.getBitmapData("backgroundImg");
-//		var b :Bitmap = new Bitmap(bd);
-//		this.addChild(b);
-//
-//		soundFile = Assets.getSound("backgroundSound");
-//		soundChannel = soundFile.play(0 ,100);
+		var bd :BitmapData = Assets.getBitmapData("backgroundImg");
+		var b :Bitmap = new Bitmap(bd);
+		this.addChild(b);
+
+		soundFile = Assets.getSound("backgroundSound");
+		soundChannel = soundFile.play(0 ,100);
+
 
 		platform1 = new Platform(ScaleManager.PLATFORM1_X, ScaleManager.PLATFORM_Y, ScaleManager.PLATFORM_WIDTH, ScaleManager.PLATFORM_HEIGHT);
 		this.addChild(platform1);
@@ -118,6 +131,33 @@ class Main extends Sprite
 		initFieldVariables();
 		setGameState(GameState.Paused);
 
+		Multitouch.inputMode = MultitouchInputMode.TOUCH_POINT;
+//		stage.addEventListener(TouchEvent.TOUCH_TAP, spaceClicked);
+//		stage.addEventListener(TouchEvent.TOUCH);
+		var roxAgent = new RoxGestureAgent(stage, RoxGestureAgent.GESTURE);
+
+		stage.addEventListener(MouseEvent.MOUSE_UP, spaceClicked);
+		stage.addEventListener(MouseEvent.MOUSE_MOVE, function(e :MouseEvent){
+			if (lastYScroll == Math.NEGATIVE_INFINITY){
+				lastYScroll = e.localY;
+
+			} else if (e.buttonDown){
+				if (lastYScroll > e.localY){
+					arrowKeyDown = false;
+					arrowKeyUp = true;
+//					scrollTriggered = true;
+//					haxe.Timer.delay(function(){
+//						if (!scrollTriggered){
+//							arrowKeyDown = arrowKeyUp = false;
+//							trace("done scroll up!")
+//						}
+//					}, 100);
+				} else {
+					arrowKeyUp = false;
+					arrowKeyDown = true;
+				}
+			}
+		});
 		stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDown);
 		stage.addEventListener(KeyboardEvent.KEY_UP, keyUp);
 		this.addEventListener(Event.ENTER_FRAME, everyFrame);
@@ -126,7 +166,9 @@ class Main extends Sprite
 	private function initFieldVariables() :Void {
 		scorePlayer = 0;
 		scoreAI = 0;
-//		messageVisibility = 0;
+		messageVisibility = 0;
+		lastYScroll = Math.NEGATIVE_INFINITY;
+		scrollTriggered = false;
 		arrowKeyUp = false;
 		arrowKeyDown = false;
 		platformSpeed = ScaleManager.PLATFORM_SPEED;
@@ -160,20 +202,28 @@ class Main extends Sprite
 		ballMovement.y = Math.sin(randomAngle) * ballSpeed;
 	}
 
-	private function keyDown(event :KeyboardEvent) :Void {
-		if (currentGameState == GameState.Paused && event.keyCode == ScaleManager.CODE_SPACE) { // Space
+	private function spaceClicked(e:Dynamic) :Void {
+//		trace("touch", messageVisibility++);
+		lastYScroll = Math.NEGATIVE_INFINITY;
+		arrowKeyDown = arrowKeyUp = false;
+		if (currentGameState == GameState.Paused)
 			setGameState(GameState.Playing);
-		}else if (event.keyCode == ScaleManager.CODE_UP) { // Up
+	}
+
+	private function keyDown(event :KeyboardEvent) :Void {
+		if (event.keyCode == CODE_SPACE) { // Space
+			spaceClicked(event);
+		}else if (event.keyCode == CODE_UP) { // Up
 			arrowKeyUp = true;
-		}else if (event.keyCode == ScaleManager.CODE_DOWN) { // Down
+		}else if (event.keyCode == CODE_DOWN) { // Down
 			arrowKeyDown = true;
 		}
 	}
 
 	private function keyUp(event :KeyboardEvent) :Void {
-		if (event.keyCode == ScaleManager.CODE_UP) { // Up
+		if (event.keyCode == CODE_UP) { // Up
 			arrowKeyUp = false;
-		}else if (event.keyCode == ScaleManager.CODE_DOWN) { // Down
+		}else if (event.keyCode == CODE_DOWN) { // Down
 			arrowKeyDown = false;
 		}
 	}
@@ -195,11 +245,11 @@ class Main extends Sprite
 				platform2.y -= platformSpeed;
 			}
 			// player platform limits
-			platform1.y = Math.max(platform1.y, 5);
+			platform1.y = Math.max(platform1.y, ScaleManager.PLATFORM_MARGIN);
 			platform1.y = Math.min(platform1.y, ScaleManager.getPlatformYLimit());
 			// AI platform limits
-			platform2.y = Math.max(platform2.y, 5);
-			platform2.y = Math.min(platform2   .y, ScaleManager.getPlatformYLimit());
+			platform2.y = Math.max(platform2.y, ScaleManager.PLATFORM_MARGIN);
+			platform2.y = Math.min(platform2.y, ScaleManager.getPlatformYLimit());
 			// ball movement
 			ball.x += ballMovement.x;
 			ball.y += ballMovement.y;
@@ -213,11 +263,11 @@ class Main extends Sprite
 				ball.x = Lib.current.stage.stageWidth - 30;
 			}
 			// ball edge bounce
-			if (ball.y < 5 || ball.y > ScaleManager.screenHeight()-5)
+			if (ball.y < ScaleManager.PLATFORM_MARGIN || ball.y > ScaleManager.screenHeight() - ScaleManager.PLATFORM_MARGIN)
 				ballMovement.y *= -1;
 			// ball goal
-			if (ball.x < 5) winGame(Player.AI);
-			if (ball.x > ScaleManager.screenWidth()-5) winGame(Player.Human);
+			if (ball.x < ScaleManager.PLATFORM_MARGIN) winGame(Player.AI);
+			if (ball.x > ScaleManager.screenWidth()-ScaleManager.PLATFORM_MARGIN) winGame(Player.Human);
 
 		}/* else {
 			if (messageVisibility % 101 == 0)

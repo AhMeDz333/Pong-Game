@@ -6,13 +6,14 @@ class ScaleManager {
 	public static inline var BALL_RADIUS :Float = 10;
 	public static inline var PLATFORM_WIDTH :Float = 15;
 	public static inline var PLATFORM_HEIGHT :Float = 100;
+	public static var LAST_SCREEN_WIDTH :Float = 500;
+	public static var LAST_SCREEN_HEIGHT :Float = 500;
+	public static var PLATFORM_MARGIN :Float = 5;
 	public static var PLATFORM_Y :Float = 200;
 	public static var PLATFORM1_X :Float = 5;
 	public static var PLATFORM2_X_INITIAL :Float = 495;
 	public static var PLATFORM2_X :Float = 480;
 	public static var BOUNCE_X_LIMIT :Float = 30;
-	public static var LAST_SCREEN_WIDTH :Float = 500;
-	public static var LAST_SCREEN_HEIGHT :Float = 500;
 
 	// dynamicality variables
 	public static var PLATFORM_SPEED :Float = 7;
@@ -22,13 +23,6 @@ class ScaleManager {
 	public static inline var BALL_COLOR :Int = 0x8662A3;
 	public static inline var PLATFORM_COLOR :Int = 0x81C7DE;
 	public static inline var SCORE_COLOR :Int = 0xbbbbbb;
-
-
-	// key codes
-	public static inline var CODE_SPACE :Int = 32;
-	public static inline var CODE_UP :Int = 38;
-	public static inline var CODE_DOWN :Int = 40;
-
 
 	// layout parameters
 	public static inline var MESSAGE_MARGIN_INITIAL :Int = 50;
@@ -50,8 +44,7 @@ class ScaleManager {
 		LAST_SCREEN_WIDTH = Lib.current.stage.stageWidth;
 		PLATFORM_Y *= scaleX;
 		PLATFORM1_X *= scaleX;
-		PLATFORM2_X = PLATFORM2_X_INITIAL * scaleX;
-		PLATFORM2_X -= 15;
+		PLATFORM2_X = Lib.current.stage.stageWidth - PLATFORM_WIDTH;
 		BOUNCE_X_LIMIT *= scaleX;
 		BALL_SPEED *= scaleX;
 		PLATFORM_SPEED *= scaleX;

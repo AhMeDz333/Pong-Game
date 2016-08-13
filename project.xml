@@ -10,6 +10,7 @@
 	<source path="Source" />
 	
 	<haxelib name="openfl" />
+    <haxelib name="roxlib" />
 	
     <assets path="Assets/sound/background.wav" rename="backgroundSound"/>
     <assets path="Assets/image/background.jpg" rename="backgroundImg" />

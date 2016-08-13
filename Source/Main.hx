@@ -1,12 +1,12 @@
 package ;
 
+import Enums.GameState;
+import Enums.Player;
 import flash.media.SoundChannel;
 import openfl.media.Sound;
 import openfl.display.Bitmap;
 import openfl.Assets;
 import openfl.display.BitmapData;
-import Main.Player;
-import Main.GameState;
 import openfl.geom.Point;
 import flash.display.Sprite;
 import flash.events.Event;
@@ -15,16 +15,6 @@ import openfl.events.KeyboardEvent;
 import openfl.text.TextField;
 import openfl.text.TextFormat;
 import openfl.text.TextFormatAlign;
-
-enum GameState {
-	Paused;
-	Playing;
-}
-
-enum Player {
-	Human;
-	AI;
-}
 
 class Main extends Sprite
 {
@@ -40,10 +30,10 @@ class Main extends Sprite
 	private var currentGameState :GameState;
 	private var arrowKeyUp :Bool;
 	private var arrowKeyDown :Bool;
-	private var platformSpeed :Int;
+	private var platformSpeed :Float;
 	private var messageVisibility :Int;
 	private var ballMovement :Point;
-	private var ballSpeed :Int;
+	private var ballSpeed :Float;
 	private var soundChannel :SoundChannel;
 	private var soundFile :Sound;
 
@@ -55,32 +45,36 @@ class Main extends Sprite
 		 else {
 			// rescale all sprite objects to match the new screen size.
 			rescale(ScaleManager.getScaleX(), ScaleManager.getScaleY());
-			ScaleManager.resetScreenInitials();
+			ScaleManager.resetScreenInitials(ScaleManager.getScaleX(), ScaleManager.getScaleY());
+			platform2.x = ScaleManager.PLATFORM2_X;
 		}
 	}
 
-	private function rescale(scaleX :Float, scaleY :Float){
-		trace("scaling", scaleX, scaleY);
+	private function rescale(scaleX :Float, scaleY :Float) :Void {
 		rescaleSprite(platform1, scaleX, scaleY);
 		rescaleSprite(platform2, scaleX, scaleY);
 		rescaleSprite(ball, scaleX, scaleY);
+		rescaleTextField(scoreField, scaleX, scaleY);
+		rescaleTextField(messageField, scaleX, scaleY);
 	}
 
-	private function rescaleSprite(sprite :Sprite, scaleX :Float, scaleY :Float){
+	private function rescaleSprite(sprite :Sprite, scaleX :Float, scaleY :Float) :Void {
 //		sprite.scaleX = scaleX;
 //		sprite.scaleY = scaleY;
-		trace("before", sprite.x+"", sprite.y+"");
-		sprite.x = sprite.x * scaleX;
-		sprite.y = sprite.y * scaleY;
-		trace("after", sprite.x+"", sprite.y+"");
+//		trace("before", sprite.x+"", sprite.y+"");
+		sprite.x *= scaleX;
+		sprite.y *= scaleY;
+//		trace("after", sprite.x+"", sprite.y+"");
 	}
 
-	private function rescaleTextField() :Void{
-
+	private function rescaleTextField(textField :TextField, scaleX :Float, scaleY :Float) :Void {
+		textField.width = Lib.current.stage.stageWidth;
+		textField.y *= scaleY;
 	}
 
 	function init()
 	{
+		trace("init");
 		if (inited) return;
 		inited = true;
 
@@ -106,7 +100,7 @@ class Main extends Sprite
 		scoreField = new TextField();
 		addChild(scoreField);
 		scoreField.width = ScaleManager.screenWidth();
-		scoreField.y = ScaleManager.MESSAGE_MARGIN;
+		scoreField.y = ScaleManager.MESSAGE_MARGIN_INITIAL;
 		scoreField.defaultTextFormat = scoreFormat;
 		scoreField.selectable = false;
 
@@ -116,7 +110,7 @@ class Main extends Sprite
 		messageField = new TextField();
 		addChild(messageField);
 		messageField.width = ScaleManager.screenWidth();
-		messageField.y = ScaleManager.screenWidth() - ScaleManager.MESSAGE_MARGIN;
+		messageField.y = ScaleManager.screenWidth() - ScaleManager.MESSAGE_MARGIN_INITIAL;
 		messageField.defaultTextFormat = messageFormat;
 		messageField.selectable = false;
 		messageField.text = "Press SPACE to start\nUse ARROW KEYS to move your platform";
@@ -129,7 +123,7 @@ class Main extends Sprite
 		this.addEventListener(Event.ENTER_FRAME, everyFrame);
 	}
 
-	private function initFieldVariables() :Void{
+	private function initFieldVariables() :Void {
 		scorePlayer = 0;
 		scoreAI = 0;
 //		messageVisibility = 0;
@@ -159,7 +153,7 @@ class Main extends Sprite
 		}
 	}
 
-	private function setBallMovementVector() :Void{
+	private function setBallMovementVector() :Void {
 		var direction :Int = (Math.random() > .5)?(1) :( -1);
 		var randomAngle :Float = (Math.random() * Math.PI / 2) - 45;
 		ballMovement.x = direction * Math.cos(randomAngle) * ballSpeed;
@@ -194,18 +188,18 @@ class Main extends Sprite
 				platform1.y += platformSpeed;
 			}
 			// AI platform movement
-			if (ball.x > ScaleManager.getAITriggerDistance() && ball.y > platform2.y + 70) {
+			if (ball.x > ScaleManager.getAITriggerDistance() && ball.y > platform2.y + ScaleManager.PLATFORM_HEIGHT*0.7) {
 				platform2.y += platformSpeed;
 			}
-			if (ball.x > ScaleManager.getAITriggerDistance() && ball.y < platform2.y + 30) {
+			if (ball.x > ScaleManager.getAITriggerDistance() && ball.y < platform2.y + ScaleManager.PLATFORM_HEIGHT*0.3) {
 				platform2.y -= platformSpeed;
 			}
 			// player platform limits
-			if (platform1.y < 5) platform1.y = 5;
-			if (platform1.y > 395) platform1.y = 395;
+			platform1.y = Math.max(platform1.y, 5);
+			platform1.y = Math.min(platform1.y, ScaleManager.getPlatformYLimit());
 			// AI platform limits
-			if (platform2.y < 5) platform2.y = 5;
-			if (platform2.y > 395) platform2.y = 395;
+			platform2.y = Math.max(platform2.y, 5);
+			platform2.y = Math.min(platform2   .y, ScaleManager.getPlatformYLimit());
 			// ball movement
 			ball.x += ballMovement.x;
 			ball.y += ballMovement.y;
@@ -214,16 +208,16 @@ class Main extends Sprite
 				bounceBall();
 				ball.x = 30;
 			}
-			if (ballMovement.x > 0 && ball.x > 470 && ball.y >= platform2.y && ball.y <= platform2.y + 100) {
+			if (ballMovement.x > 0 && ball.x > Lib.current.stage.stageWidth - 30 && ball.y >= platform2.y && ball.y <= platform2.y + 100) {
 				bounceBall();
-				ball.x = 470;
+				ball.x = Lib.current.stage.stageWidth - 30;
 			}
 			// ball edge bounce
-			if (ball.y < 5 || ball.y > 495)
+			if (ball.y < 5 || ball.y > ScaleManager.screenHeight()-5)
 				ballMovement.y *= -1;
 			// ball goal
 			if (ball.x < 5) winGame(Player.AI);
-			if (ball.x > 495) winGame(Player.Human);
+			if (ball.x > ScaleManager.screenWidth()-5) winGame(Player.Human);
 
 		}/* else {
 			if (messageVisibility % 101 == 0)

@@ -1,5 +1,7 @@
 package ;
 
+import ScaleManager;
+import ScaleManager;
 import flash.ui.Mouse;
 import flash.events.MouseEvent;
 import com.roxstudio.haxe.gesture.RoxGestureEvent;
@@ -41,10 +43,8 @@ class Main extends Sprite
 	private var currentGameState :GameState;
 	private var arrowKeyUp :Bool;
 	private var arrowKeyDown :Bool;
-	private var platformSpeed :Float;
 	private var messageVisibility :Int;
 	private var ballMovement :Point;
-	private var ballSpeed :Float;
 	private var soundChannel :SoundChannel;
 	private var soundFile :Sound;
 	private var lastYScroll :Float;
@@ -57,32 +57,20 @@ class Main extends Sprite
 		if (!inited) init();
 		 else {
 			// rescale all sprite objects to match the new screen size.
-			rescale(ScaleManager.getScaleX(), ScaleManager.getScaleY());
-			ScaleManager.resetScreenInitials(ScaleManager.getScaleX(), ScaleManager.getScaleY());
-			platform2.x = ScaleManager.PLATFORM2_X;
+			rescale();
 		}
 	}
 
-	private function rescale(scaleX :Float, scaleY :Float) :Void {
-		rescaleSprite(platform1, scaleX, scaleY);
-		rescaleSprite(platform2, scaleX, scaleY);
-		rescaleSprite(ball, scaleX, scaleY);
-		rescaleTextField(scoreField, scaleX, scaleY);
-		rescaleTextField(messageField, scaleX, scaleY);
-	}
-
-	private function rescaleSprite(sprite :Sprite, scaleX :Float, scaleY :Float) :Void {
-//		sprite.scaleX = scaleX;
-//		sprite.scaleY = scaleY;
-//		trace("before", sprite.x+"", sprite.y+"");
-		sprite.x *= scaleX;
-		sprite.y *= scaleY;
-//		trace("after", sprite.x+"", sprite.y+"");
-	}
-
-	private function rescaleTextField(textField :TextField, scaleX :Float, scaleY :Float) :Void {
-		textField.width = Lib.current.stage.stageWidth;
-		textField.y *= scaleY;
+	private function rescale() :Void {
+		ScaleManager.rescaleSprite(platform1);
+		ScaleManager.rescaleSprite(platform2);
+		platform1.x = ScaleManager.PLATFORM_MARGIN;
+		platform2.x = Lib.current.stage.stageWidth - ScaleManager.PLATFORM_WIDTH - ScaleManager.PLATFORM_MARGIN;
+		platform1.scaleY = platform2.scaleY = ScaleManager.getPureScaleY();
+		ScaleManager.rescaleSprite(ball);
+		ScaleManager.rescaleTextField(scoreField);
+		ScaleManager.rescaleTextField(messageField);
+		ScaleManager.resetScreenInitials();
 	}
 
 	function init()
@@ -171,8 +159,6 @@ class Main extends Sprite
 		scrollTriggered = false;
 		arrowKeyUp = false;
 		arrowKeyDown = false;
-		platformSpeed = ScaleManager.PLATFORM_SPEED;
-		ballSpeed = ScaleManager.BALL_SPEED;
 		ballMovement = new Point(0,0);
 	}
 
@@ -185,7 +171,8 @@ class Main extends Sprite
 
 			messageField.alpha = 1;
 		}else {
-//			soundChannel = soundFile.play(0 ,100);
+			if (soundFile != null)
+				soundChannel = soundFile.play(0 ,100);
 			messageField.alpha = 0;
 			platform1.y = ScaleManager.PLATFORM_Y;
 			platform2.y = ScaleManager.PLATFORM_Y;
@@ -198,8 +185,8 @@ class Main extends Sprite
 	private function setBallMovementVector() :Void {
 		var direction :Int = (Math.random() > .5)?(1) :( -1);
 		var randomAngle :Float = (Math.random() * Math.PI / 2) - 45;
-		ballMovement.x = direction * Math.cos(randomAngle) * ballSpeed;
-		ballMovement.y = Math.sin(randomAngle) * ballSpeed;
+		ballMovement.x = direction * Math.cos(randomAngle) * ScaleManager.BALL_SPEED;
+		ballMovement.y = Math.sin(randomAngle) * ScaleManager.BALL_SPEED;
 	}
 
 	private function spaceClicked(e:Dynamic) :Void {
@@ -232,17 +219,17 @@ class Main extends Sprite
 //		messageVisibility++;
 		if(currentGameState == GameState.Playing){
 			if (arrowKeyUp) {
-				platform1.y -= platformSpeed;
+				platform1.y -= ScaleManager.PLATFORM_SPEED;
 			}
 			if (arrowKeyDown) {
-				platform1.y += platformSpeed;
+				platform1.y += ScaleManager.PLATFORM_SPEED;
 			}
 			// AI platform movement
 			if (ball.x > ScaleManager.getAITriggerDistance() && ball.y > platform2.y + ScaleManager.PLATFORM_HEIGHT*0.7) {
-				platform2.y += platformSpeed;
+				platform2.y += ScaleManager.PLATFORM_SPEED;
 			}
 			if (ball.x > ScaleManager.getAITriggerDistance() && ball.y < platform2.y + ScaleManager.PLATFORM_HEIGHT*0.3) {
-				platform2.y -= platformSpeed;
+				platform2.y -= ScaleManager.PLATFORM_SPEED;
 			}
 			// player platform limits
 			platform1.y = Math.max(platform1.y, ScaleManager.PLATFORM_MARGIN);
@@ -254,11 +241,11 @@ class Main extends Sprite
 			ball.x += ballMovement.x;
 			ball.y += ballMovement.y;
 			// ball platform bounce
-			if (ballMovement.x < 0 && ball.x < 30 && ball.y >= platform1.y && ball.y <= platform1.y + 100) {
+			if (ballMovement.x < 0 && ball.x < 30 && ball.y >= platform1.y && ball.y <= platform1.y + ScaleManager.PLATFORM_HEIGHT) {
 				bounceBall();
 				ball.x = 30;
 			}
-			if (ballMovement.x > 0 && ball.x > Lib.current.stage.stageWidth - 30 && ball.y >= platform2.y && ball.y <= platform2.y + 100) {
+			if (ballMovement.x > 0 && ball.x > Lib.current.stage.stageWidth - 30 && ball.y >= platform2.y && ball.y <= platform2.y + ScaleManager.PLATFORM_HEIGHT) {
 				bounceBall();
 				ball.x = Lib.current.stage.stageWidth - 30;
 			}
@@ -280,8 +267,8 @@ class Main extends Sprite
 	private function bounceBall() :Void {
 		var direction :Int = (ballMovement.x > 0)?( -1) :(1);
 		var randomAngle :Float = (Math.random() * Math.PI / 2) - 45;
-		ballMovement.x = direction * Math.cos(randomAngle) * ballSpeed;
-		ballMovement.y = direction * Math.sin(randomAngle) * ballSpeed;
+		ballMovement.x = direction * Math.cos(randomAngle) * ScaleManager.BALL_SPEED;
+		ballMovement.y = direction * Math.sin(randomAngle) * ScaleManager.BALL_SPEED;
 	}
 
 	private function winGame(player :Player) :Void {

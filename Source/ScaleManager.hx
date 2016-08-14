@@ -1,11 +1,13 @@
 package ;
+import openfl.text.TextField;
+import openfl.display.Sprite;
 import openfl.Lib;
 
 class ScaleManager {
 	// dimensions
-	public static inline var BALL_RADIUS :Float = 10;
-	public static inline var PLATFORM_WIDTH :Float = 15;
-	public static inline var PLATFORM_HEIGHT :Float = 100;
+	public static var BALL_RADIUS :Float = 10;
+	public static var PLATFORM_WIDTH :Float = 15;
+	public static var PLATFORM_HEIGHT :Float = 100;
 	public static var LAST_SCREEN_WIDTH :Float = 500;
 	public static var LAST_SCREEN_HEIGHT :Float = 500;
 	public static var PLATFORM_MARGIN :Float = 5;
@@ -39,15 +41,37 @@ class ScaleManager {
 //		return 500;
 	}
 
-	public static function resetScreenInitials(scaleX :Float, scaleY :Float) :Void {
+
+	public static function rescaleSprite(sprite :Sprite) :Void {
+		var scaleX :Float = getScaleX();
+		var scaleY :Float = getScaleY();
+//		sprite.scaleX = scaleX;
+//		sprite.scaleY = scaleY;
+//		trace("before", sprite.x+"", sprite.y+"");
+		sprite.x *= scaleX;
+		sprite.y *= scaleY;
+//		trace("after", sprite.x+"", sprite.y+"");
+	}
+
+	public static function rescaleTextField(textField :TextField) :Void {
+		var scaleX :Float = getScaleX();
+		var scaleY :Float = getScaleY();
+		textField.width = Lib.current.stage.stageWidth;
+		textField.y *= scaleY;
+	}
+
+	public static function resetScreenInitials() :Void {
+		var scaleX :Float = getScaleX();
+		var scaleY :Float = getScaleY();
 		LAST_SCREEN_HEIGHT = Lib.current.stage.stageHeight;
 		LAST_SCREEN_WIDTH = Lib.current.stage.stageWidth;
-		PLATFORM_Y *= scaleX;
-		PLATFORM1_X *= scaleX;
-		PLATFORM2_X = Lib.current.stage.stageWidth - PLATFORM_WIDTH;
+		PLATFORM_Y *= scaleY;
+//		PLATFORM1_X *= scaleX;
+//		PLATFORM2_X = Lib.current.stage.stageWidth - PLATFORM_WIDTH - PLATFORM_MARGIN;
 		BOUNCE_X_LIMIT *= scaleX;
 		BALL_SPEED *= scaleX;
-		PLATFORM_SPEED *= scaleX;
+		PLATFORM_SPEED *= scaleY;
+		PLATFORM_HEIGHT *= scaleY;
 	}
 
 	public static function getPlatformYLimit() :Float {
@@ -61,6 +85,16 @@ class ScaleManager {
 	public static function getScaleY() :Float {
 		return Lib.current.stage.stageHeight / LAST_SCREEN_HEIGHT;
 	}
+
+	public static function getPureScaleX() :Float {
+		return Lib.current.stage.stageWidth / 500;
+	}
+
+	public static function getPureScaleY() :Float {
+		return Lib.current.stage.stageHeight / 500;
+	}
+
+
 
 	public static function getAITriggerDistance() :Float {
 		return screenWidth() * 3 / 5;

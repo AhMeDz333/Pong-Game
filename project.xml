@@ -10,6 +10,7 @@
 	<source path="Source" />
 	
 	<haxelib name="openfl" />
+    <ndll name="hxSerial" haxelib="hxSerial" />
     <haxelib name="roxlib" />
 	
     <assets path="Assets/sound/background.wav" rename="backgroundSound"/>

@@ -2,23 +2,21 @@ package ;
 
 import ScaleManager;
 import ScaleManager;
-import flash.ui.Mouse;
-import flash.events.MouseEvent;
-import com.roxstudio.haxe.gesture.RoxGestureEvent;
+import openfl.events.MouseEvent;
 import com.roxstudio.haxe.gesture.RoxGestureAgent;
 import openfl.ui.MultitouchInputMode;
 import openfl.ui.Multitouch;
 import Enums.GameState;
 import Enums.Player;
-import flash.media.SoundChannel;
+import openfl.media.SoundChannel;
 import openfl.media.Sound;
 import openfl.display.Bitmap;
 import openfl.Assets;
 import openfl.display.BitmapData;
 import openfl.geom.Point;
-import flash.display.Sprite;
-import flash.events.Event;
-import flash.Lib;
+import openfl.display.Sprite;
+import openfl.events.Event;
+import openfl.Lib;
 import openfl.events.KeyboardEvent;
 import openfl.text.TextField;
 import openfl.text.TextFormat;
@@ -74,16 +72,16 @@ class Main extends Sprite
 	}
 
 	function init()
-	{
+	{   trace("init");
 		if (inited) return;
 		inited = true;
 
-		var bd :BitmapData = Assets.getBitmapData("backgroundImg");
-		var b :Bitmap = new Bitmap(bd);
-		this.addChild(b);
-
-		soundFile = Assets.getSound("backgroundSound");
-		soundChannel = soundFile.play(0 ,100);
+//		var bd :BitmapData = Assets.getBitmapData("backgroundImg");
+//		var b :Bitmap = new Bitmap(bd);
+//		this.addChild(b);
+//
+//		soundFile = Assets.getSound("backgroundSound");
+//		soundChannel = soundFile.play(0 ,100);
 
 
 		platform1 = new Platform(ScaleManager.PLATFORM1_X, ScaleManager.PLATFORM_Y, ScaleManager.PLATFORM_WIDTH, ScaleManager.PLATFORM_HEIGHT);
@@ -114,8 +112,11 @@ class Main extends Sprite
 		messageField.y = ScaleManager.screenWidth() - ScaleManager.MESSAGE_MARGIN_INITIAL;
 		messageField.defaultTextFormat = messageFormat;
 		messageField.selectable = false;
+		#if (mobile)
+		messageField.text = "Touch anywhere to start\nSwipe to move your platform";
+		#else
 		messageField.text = "Press SPACE to start\nUse ARROW KEYS to move your platform";
-
+		#end
 		initFieldVariables();
 		setGameState(GameState.Paused);
 
@@ -124,25 +125,33 @@ class Main extends Sprite
 //		stage.addEventListener(TouchEvent.TOUCH);
 		var roxAgent = new RoxGestureAgent(stage, RoxGestureAgent.GESTURE);
 
-		stage.addEventListener(MouseEvent.MOUSE_UP, spaceClicked);
+		stage.addEventListener(MouseEvent.MOUSE_DOWN, spaceClicked);
+		stage.addEventListener(MouseEvent.MOUSE_UP, function(e :MouseEvent){
+			lastYScroll = Math.NEGATIVE_INFINITY;
+			arrowKeyDown = arrowKeyUp = false;
+		});
+		stage.addEventListener(MouseEvent.MOUSE_OUT, function(e :MouseEvent){
+			lastYScroll = Math.NEGATIVE_INFINITY;
+			arrowKeyDown = arrowKeyUp = false;
+		});
 		stage.addEventListener(MouseEvent.MOUSE_MOVE, function(e :MouseEvent){
-			if (lastYScroll == Math.NEGATIVE_INFINITY){
-				lastYScroll = e.localY;
+			if (e.buttonDown){
+				trace(e, messageVisibility++);
+				if (lastYScroll != Math.NEGATIVE_INFINITY){
+					if (lastYScroll > e.localY){
+						arrowKeyDown = false;
+						arrowKeyUp = true;
+						lastYScroll = e.localY;
 
-			} else if (e.buttonDown){
-				if (lastYScroll > e.localY){
-					arrowKeyDown = false;
-					arrowKeyUp = true;
-//					scrollTriggered = true;
-//					haxe.Timer.delay(function(){
-//						if (!scrollTriggered){
-//							arrowKeyDown = arrowKeyUp = false;
-//							trace("done scroll up!")
-//						}
-//					}, 100);
+					} else if (lastYScroll < e.localY){
+						arrowKeyUp = false;
+						arrowKeyDown = true;
+						lastYScroll = e.localY;
+					}
 				} else {
-					arrowKeyUp = false;
-					arrowKeyDown = true;
+//				trace("equal", messageVisibility++);
+					arrowKeyDown = arrowKeyUp = false;
+					lastYScroll = e.localY;
 				}
 			}
 		});
@@ -160,6 +169,9 @@ class Main extends Sprite
 		arrowKeyUp = false;
 		arrowKeyDown = false;
 		ballMovement = new Point(0,0);
+		#if (mobile)
+		ScaleManager.PLATFORM_SPEED = 10;
+		#end
 	}
 
 	private function setGameState(state :GameState) :Void {
@@ -173,6 +185,8 @@ class Main extends Sprite
 		}else {
 			if (soundFile != null)
 				soundChannel = soundFile.play(0 ,100);
+			lastYScroll = Math.NEGATIVE_INFINITY;
+			arrowKeyDown = arrowKeyUp = false;
 			messageField.alpha = 0;
 			platform1.y = ScaleManager.PLATFORM_Y;
 			platform2.y = ScaleManager.PLATFORM_Y;
@@ -190,11 +204,20 @@ class Main extends Sprite
 	}
 
 	private function spaceClicked(e:Dynamic) :Void {
-//		trace("touch", messageVisibility++);
 		lastYScroll = Math.NEGATIVE_INFINITY;
 		arrowKeyDown = arrowKeyUp = false;
+//		trace("touch", messageVisibility++);
 		if (currentGameState == GameState.Paused)
 			setGameState(GameState.Playing);
+		else{
+//			if (Std.instance(e, MouseEvent) != null){
+//				var me :MouseEvent = cast(e, MouseEvent);
+//				if (me.localY == lastYScroll){
+//					arrowKeyUp = arrowKeyDown = false;
+//					lastYScroll = Math.NEGATIVE_INFINITY;
+//				}
+//			}
+		}
 	}
 
 	private function keyDown(event :KeyboardEvent) :Void {
@@ -306,8 +329,8 @@ class Main extends Sprite
 	public static function main()
 	{
 		// static entry point
-		Lib.current.stage.align = flash.display.StageAlign.TOP_LEFT;
-		Lib.current.stage.scaleMode = flash.display.StageScaleMode.NO_SCALE;
+		Lib.current.stage.align = openfl.display.StageAlign.TOP_LEFT;
+		Lib.current.stage.scaleMode = openfl.display.StageScaleMode.NO_SCALE;
 		Lib.current.addChild(new Main());
 		//
 	}

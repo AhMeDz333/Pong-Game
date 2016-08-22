@@ -1,0 +1,29 @@
+<component name="libraryTable">
+  <library name="1,8,7" type="Haxe">
+    <CLASSES>
+      <root url="file://$USER_HOME$/openfl/actuate/1,8,7" />
+      <root url="file://$USER_HOME$/openfl/box2d/1,2,3" />
+      <root url="file://$USER_HOME$/openfl/hscript/2,0,7" />
+      <root url="file://$USER_HOME$/openfl/hxcpp/3,3,49" />
+      <root url="file://$USER_HOME$/openfl/layout/1,2,1" />
+      <root url="file://$USER_HOME$/openfl/lime/2,9,1" />
+      <root url="file://$USER_HOME$/openfl/lime/3,0,3" />
+      <root url="file://$USER_HOME$/openfl/openfl/3,6,1" />
+      <root url="file://$USER_HOME$/openfl/swf/2,2,3" />
+      <root url="file://$USER_HOME$/openfl/openfl/4,0,3" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$USER_HOME$/openfl/actuate/1,8,7" />
+      <root url="file://$USER_HOME$/openfl/box2d/1,2,3" />
+      <root url="file://$USER_HOME$/openfl/hscript/2,0,7" />
+      <root url="file://$USER_HOME$/openfl/hxcpp/3,3,49" />
+      <root url="file://$USER_HOME$/openfl/layout/1,2,1" />
+      <root url="file://$USER_HOME$/openfl/lime/2,9,1" />
+      <root url="file://$USER_HOME$/openfl/lime/3,0,3" />
+      <root url="file://$USER_HOME$/openfl/openfl/3,6,1" />
+      <root url="file://$USER_HOME$/openfl/swf/2,2,3" />
+      <root url="file://$USER_HOME$/openfl/openfl/4,0,3" />
+    </SOURCES>
+  </library>
+</component>

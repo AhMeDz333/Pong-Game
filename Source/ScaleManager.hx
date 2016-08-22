@@ -1,4 +1,5 @@
 package ;
+import openfl.display.DisplayObject;
 import openfl.text.TextField;
 import openfl.display.Sprite;
 import openfl.Lib;
@@ -11,6 +12,7 @@ class ScaleManager {
 	public static var LAST_SCREEN_WIDTH :Float = 500;
 	public static var LAST_SCREEN_HEIGHT :Float = 500;
 	public static var PLATFORM_MARGIN :Float = 5;
+	public static var ARROW_MARGIN :Float = 50;
 	public static var PLATFORM_Y :Float = 200;
 	public static var PLATFORM1_X :Float = 5;
 	public static var PLATFORM2_X_INITIAL :Float = 495;
@@ -42,15 +44,15 @@ class ScaleManager {
 	}
 
 
-	public static function rescaleSprite(sprite :Sprite) :Void {
+	public static function rescaleSprite(displayObj :DisplayObject) :Void {
 		var scaleX :Float = getScaleX();
 		var scaleY :Float = getScaleY();
-//		sprite.scaleX = scaleX;
-//		sprite.scaleY = scaleY;
-//		trace("before", sprite.x+"", sprite.y+"");
-		sprite.x *= scaleX;
-		sprite.y *= scaleY;
-//		trace("after", sprite.x+"", sprite.y+"");
+//		displayObj.scaleX = scaleX;
+//		displayObj.scaleY = scaleY;
+//		trace("before", displayObj.x+"", displayObj.y+"");
+		displayObj.x *= scaleX;
+		displayObj.y *= scaleY;
+//		trace("after", displayObj.x+"", displayObj.y+"");
 	}
 
 	public static function rescaleTextField(textField :TextField) :Void {

@@ -1,9 +1,8 @@
 package ;
 
-import ScaleManager;
+import flash.ui.Mouse;
 import ScaleManager;
 import openfl.events.MouseEvent;
-import com.roxstudio.haxe.gesture.RoxGestureAgent;
 import openfl.ui.MultitouchInputMode;
 import openfl.ui.Multitouch;
 import Enums.GameState;
@@ -47,6 +46,8 @@ class Main extends Sprite
 	private var soundFile :Sound;
 	private var lastYScroll :Float;
 	private var scrollTriggered :Bool;
+	private var downImage :Image;
+	private var upImage :Image;
 
 	/* ENTRY POINT */
 
@@ -68,19 +69,32 @@ class Main extends Sprite
 		ScaleManager.rescaleSprite(ball);
 		ScaleManager.rescaleTextField(scoreField);
 		ScaleManager.rescaleTextField(messageField);
+		#if (mobile)
+		var factor :Float = 50;
+		upImage.x = ScaleManager.screenWidth() - ScaleManager.ARROW_MARGIN - factor;
+		downImage.x = ScaleManager.ARROW_MARGIN;
+		downImage.y = upImage.y = ScaleManager.screenHeight() - ScaleManager.ARROW_MARGIN - factor;
+//		downImage.rotation = 180;
+		#end
 		ScaleManager.resetScreenInitials();
 	}
 
+	function getBitmap(name :String, X :Float = 0, Y :Float = 0) :Bitmap {
+		var bd :BitmapData = Assets.getBitmapData("image/" + name);
+		var b :Bitmap = new Bitmap(bd);
+		b.x = X;
+		b.y = Y;
+		return b;
+	}
+
 	function init()
-	{   trace("init");
+	{
 		if (inited) return;
 		inited = true;
 
-//		var bd :BitmapData = Assets.getBitmapData("backgroundImg");
-//		var b :Bitmap = new Bitmap(bd);
-//		this.addChild(b);
+//	    this.addChild(getBitmap("background.jpg"));
 //
-//		soundFile = Assets.getSound("backgroundSound");
+//		soundFile = Assets.getSound("sound/background.wav");
 //		soundChannel = soundFile.play(0 ,100);
 
 
@@ -112,52 +126,48 @@ class Main extends Sprite
 		messageField.y = ScaleManager.screenWidth() - ScaleManager.MESSAGE_MARGIN_INITIAL;
 		messageField.defaultTextFormat = messageFormat;
 		messageField.selectable = false;
-		#if (mobile)
-		messageField.text = "Touch anywhere to start\nSwipe to move your platform";
+		#if (mobile || flash)
+		messageField.text = "Touch anywhere to start\nUse ARROW KEYS to move your platform";
 		#else
 		messageField.text = "Press SPACE to start\nUse ARROW KEYS to move your platform";
 		#end
+		// up and down arrows
+		#if (mobile)
+		initControlArrows();
+		#end
+
 		initFieldVariables();
 		setGameState(GameState.Paused);
 
 		Multitouch.inputMode = MultitouchInputMode.TOUCH_POINT;
-//		stage.addEventListener(TouchEvent.TOUCH_TAP, spaceClicked);
-//		stage.addEventListener(TouchEvent.TOUCH);
-		var roxAgent = new RoxGestureAgent(stage, RoxGestureAgent.GESTURE);
 
-		stage.addEventListener(MouseEvent.MOUSE_DOWN, spaceClicked);
-		stage.addEventListener(MouseEvent.MOUSE_UP, function(e :MouseEvent){
-			lastYScroll = Math.NEGATIVE_INFINITY;
-			arrowKeyDown = arrowKeyUp = false;
-		});
-		stage.addEventListener(MouseEvent.MOUSE_OUT, function(e :MouseEvent){
-			lastYScroll = Math.NEGATIVE_INFINITY;
-			arrowKeyDown = arrowKeyUp = false;
-		});
-		stage.addEventListener(MouseEvent.MOUSE_MOVE, function(e :MouseEvent){
-			if (e.buttonDown){
-				trace(e, messageVisibility++);
-				if (lastYScroll != Math.NEGATIVE_INFINITY){
-					if (lastYScroll > e.localY){
-						arrowKeyDown = false;
-						arrowKeyUp = true;
-						lastYScroll = e.localY;
-
-					} else if (lastYScroll < e.localY){
-						arrowKeyUp = false;
-						arrowKeyDown = true;
-						lastYScroll = e.localY;
-					}
-				} else {
-//				trace("equal", messageVisibility++);
-					arrowKeyDown = arrowKeyUp = false;
-					lastYScroll = e.localY;
-				}
-			}
+		stage.addEventListener(MouseEvent.MOUSE_DOWN, function(e :MouseEvent){
+			if (currentGameState == GameState.Paused)
+				setGameState(GameState.Playing);
 		});
 		stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDown);
 		stage.addEventListener(KeyboardEvent.KEY_UP, keyUp);
 		this.addEventListener(Event.ENTER_FRAME, everyFrame);
+		rescale();
+	}
+
+	private function initControlArrows() :Void {
+		downImage = new Image(getBitmap("down.png"));
+		upImage = new Image(getBitmap("up.png"));
+		downImage.addEventListener(MouseEvent.MOUSE_DOWN, function(e :MouseEvent){
+			arrowKeyDown = true;
+		});
+		downImage.addEventListener(MouseEvent.MOUSE_UP, function(e :MouseEvent){
+			arrowKeyDown = false;
+		});
+		upImage.addEventListener(MouseEvent.MOUSE_DOWN, function(e :MouseEvent){
+			arrowKeyUp = true;
+		});
+		upImage.addEventListener(MouseEvent.MOUSE_UP, function(e :MouseEvent){
+			arrowKeyUp = false;
+		});
+		this.addChild(downImage);
+		this.addChild(upImage);
 	}
 
 	private function initFieldVariables() :Void {
@@ -169,9 +179,6 @@ class Main extends Sprite
 		arrowKeyUp = false;
 		arrowKeyDown = false;
 		ballMovement = new Point(0,0);
-		#if (mobile)
-		ScaleManager.PLATFORM_SPEED = 10;
-		#end
 	}
 
 	private function setGameState(state :GameState) :Void {
@@ -203,26 +210,10 @@ class Main extends Sprite
 		ballMovement.y = Math.sin(randomAngle) * ScaleManager.BALL_SPEED;
 	}
 
-	private function spaceClicked(e:Dynamic) :Void {
-		lastYScroll = Math.NEGATIVE_INFINITY;
-		arrowKeyDown = arrowKeyUp = false;
-//		trace("touch", messageVisibility++);
-		if (currentGameState == GameState.Paused)
-			setGameState(GameState.Playing);
-		else{
-//			if (Std.instance(e, MouseEvent) != null){
-//				var me :MouseEvent = cast(e, MouseEvent);
-//				if (me.localY == lastYScroll){
-//					arrowKeyUp = arrowKeyDown = false;
-//					lastYScroll = Math.NEGATIVE_INFINITY;
-//				}
-//			}
-		}
-	}
-
 	private function keyDown(event :KeyboardEvent) :Void {
 		if (event.keyCode == CODE_SPACE) { // Space
-			spaceClicked(event);
+			if (currentGameState == GameState.Paused)
+				setGameState(GameState.Playing);
 		}else if (event.keyCode == CODE_UP) { // Up
 			arrowKeyUp = true;
 		}else if (event.keyCode == CODE_DOWN) { // Down

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Hbox x="0" y="0" width="500" height="500">
+    <mycomponent x="5" style="borderSize:1;borderColor:F0EEEB"/>
+    <mycomponent x="495" style="borderSize:1;borderColor:F0EEEB"/>
+</Hbox>

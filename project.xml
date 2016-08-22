@@ -4,16 +4,18 @@
 	<meta title="Pong" package="com.sample.pong" version="1.0.0" company="Company Name" />
 	<app main="Main" path="Export" file="Pong" />
 
-	<window background="#333333" fps="60" />
+	<window background="#000000" fps="60" />
 	<window width="500" height="500" unless="mobile" />
 	
 	<source path="Source" />
-	
-	<haxelib name="openfl" />
-    <ndll name="hxSerial" haxelib="hxSerial" />
-    <haxelib name="roxlib" />
-	
-    <assets path="Assets/sound/background.wav" rename="backgroundSound"/>
-    <assets path="Assets/image/background.jpg" rename="backgroundImg" />
+
+    <haxelib name="openfl" />
+    <!--<haxelib name="haxeui" />-->
+    <haxelib name="actuate" />
+    <haxelib name="hxcpp" />
+
+    <assets path="Assets/layout" rename="layout" />
+    <assets path="Assets/sound" rename="sound"/>
+    <assets path="Assets/image" rename="image" />
 	
 </project>
